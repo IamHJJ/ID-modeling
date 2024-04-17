@@ -61,10 +61,12 @@ phiF1=0.0055
 phiF2=0.0145
 phiF3=0.1
 phiF4=0.88
-cM1=40 #mean rate of sex-partner change
+cM=c(40,10,2.4,0.5) #mean rate of sex-partner change
+cM1=40 
 cM2=10
 cM3=2.4
 cM4=0.5
+cF=c(40,30.7,4.8,0.43)
 cF1=40
 cF2=30.7
 cF3=4.8
@@ -77,30 +79,43 @@ betaM = 0.6 #transmission probability women to men
 thetaM = 0.05 #proportion of asympt. men
 thetaF = 0.4 #proportion of asympt. women
 epsilon = 0.8 #pattern of mixing
-NM = 
-NF = 
-SM0 = 
-SFO = 
-IM0 = 
-IF0 =
+
+NM = 1000 #?
+NF = 1000 #?
+
+  
+XM1, YM1, AM1, XM2, YM2, AM2, XM3, YM3, AM3,
+XM4, YM4, AM4, XF1, YF1, AF1, XF2, YF2, AF2,
+XF3, YF3, AF3, XF4, YF4, AF4
+  
 
 #######################################################################
 library(matrixcalc)
 
 # Define the function to calculate the rho matrix for male
+rhoM_matrix <- matrix(0, nrow = 4, ncol = 4)
 
-calculate_rhoM_matrix <- function(epsilon, cF, NF) {
-  rhoM_matrix <- matrix(0, nrow = 4, ncol = 4)
-  for (i in 1:4) {
+for (i in 1:4) {
     for (j in 1:4) {
       if (i == j) {
-        rho_matrix[i, j] <- epsilon + (1 - epsilon) * ((cF*NF)/sum(cF*NF))
+        rhoM_matrix[i, j] <- epsilon + (1 - epsilon) * ((cF[i]*NF)/sum(cF*NF))
       } else {
-        rho_matrix[i, j] <- (1 - epsilon) * ((cF*NF)/sum(cF*NF))
+        rhoM_matrix[i, j] <- (1 - epsilon) * ((cF[i]*NF)/sum(cF*NF))
       }
     }
+}
+
+# Define the function to calculate the rho matrix for female
+rhoF_matrix <- matrix(0, nrow = 4, ncol = 4)
+
+for (i in 1:4) {
+  for (j in 1:4) {
+    if (i == j) {
+      rhoF_matrix[i, j] <- epsilon + (1 - epsilon) * ((cM[i]*NM)/sum(cM*NM))
+    } else {
+      rhoF_matrix[i, j] <- (1 - epsilon) * ((cM[i]*NM)/sum(cM*NM))
+    }
   }
-  return(rhoM_matrix)
 }
 
 #rhoF
@@ -119,43 +134,15 @@ calculate_rhoF_matrix <- function(epsilon, cM, NM) {
 }
 
 
-########################################################################
-  
-# Assume c_k is a vector of mean rates of partner change for each activity group
-cM <- c(40.0, 10.0, 2.4, 0.5) # For men, as an example
-# Assume N_k is a vector of sizes of each activity group
-NM <- c(XM1 + YM1 + AM1, XM2 + YM2 + AM2,
-         XM3 + YM3 + AM3, XM4 + YM4 + AM4) # For men
-
-# Calculate assortativity matrix Q
-Q <- matrix(data = 0, nrow = length(cM), ncol = length(cM)) 
-diag(Q) <- 1 # Set diagonal to 1 for assortative mixing
-
-# Compute rho for each group pair
-NM=1000
-rho <- matrix(data = NA, nrow = length(cM), ncol = length(cM))
-for (i in 1:length(cM)) {
-  for (j in 1:length(cM)) {
-    # Using the provided formula
-    rho[i, j] <- epsilon * Q[i, j] + (1 - epsilon) * cM[j] * NM[j] / sum(cM * NM)
-  }
-}
-
-# Now rho[i, j] can be used in the differential equations to calculate the rate of new infections
-# ... Inside your differential equations, when calculating new infections ...
-new_infections_men_1 <- beta_mw * X_men_1 * (rho[1, 1] * (Y_women_1 + A_women_1) +
-                                               rho[1, 2] * (Y_women_2 + A_women_2) +
-                                               # ... and so on for all women's groups
-)
-# ... You would replicate similar calculations for all other groups and combinations ...
-
-
 ################################################################################
-state=c(XM1=XKM0, YKM=YKM0,AKM=AKM0);
+state=c(XM1, YM1, AM1, XM2, YM2, AM2, XM3, YM3, AM3,
+        XM4, YM4, AM4, XF1, YF1, AF1, XF2, YF2, AF2,
+        XF3, YF3, AF3, XF4, YF4, AF4);
 
 parameters=c(mu=mu, rhoM=rhoM, rhoF=rhoF, cM=cM, cF=cF, sigmaM=sigmaM, 
             sigmaF=sigmaF, gamma=gamma, betaF=betaF, betaM=betaM, thetaM=thetaM,
-            thetaF=thetaF); 
+            thetaF=thetaF);
+
 times=seq(1,1000*365,by=1)
 
 #Simulation model

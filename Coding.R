@@ -7,6 +7,7 @@ library(deSolve)
 # Y = symptomatic infected
 # A = asymptomatic infected
 
+#hi
 ################################################################
 
 SIS2riskGrs <- function(t, state, parameters) {
@@ -65,60 +66,64 @@ phiF1=0.0055
 phiF2=0.0145
 phiF3=0.1
 phiF4=0.88
-cM=c(40,10,2.4,0.5) #mean rate of sex-partner change
-cM1=40 
-cM2=10
-cM3=2.4
-cM4=0.5
-cF=c(40,30.7,4.8,0.43)
-cF1=40
-cF2=30.7
-cF3=4.8
-cF4=0.43
+cM=c(40,10,2.4,0.5)/365 #mean rate of sex-partner change
+cM1=40/365
+cM2=10/365
+cM3=2.4/365
+cM4=0.5/365
+cF=c(40,30.7,4.8,0.43)/365
+cF1=40/365
+cF2=30.7/365
+cF3=4.8/365
+cF4=0.43/365
 sigmaM = 1/13 #recovery rate for sympt. men
 sigmaF = 1/20 #recovery rate for sympt. women
 gammaF = 1/185 #recovery rate for asympt. men and women
 gammaM = 1/185 #recovery rate for asympt. men and women
-betaF = 0.8 #transmission probability men to women
-betaM = 0.6 #transmission probability women to men
+betaM = 0.8 #transmission probability men to women
+betaF = 0.6 #transmission probability women to men
 thetaM = 0.05 #proportion of asympt. men
 thetaF = 0.4 #proportion of asympt. women
 epsilon = 0.8 #pattern of mixing
 
-NM = 10000
-NF = 10000
-NM1 = 55
-XM1 = 35
-YM1 = 10
-AM1 = 10
-NM2 = 445
-XM2 = 425
-YM2 = 10
-AM2 = 10
-NM3 = 2000
-XM3 = 1980
-YM3 = 10
-AM3 = 10
-NM4 = 7500
-XM4 = 7480
-YM4 = 10
-AM4 = 10
-NF1 = 55
-XF1 = 35
-YF1 = 10
-AF1 = 10
-NF2 = 445
-XF2 = 425
-YF2 = 10
-AF2 = 10
-NF3 = 2000
-XF3 = 1980
-YF3 = 10
-AF3 = 10
-NF4 = 7500
-XF4 = 7480
-YF4 = 10
-AF4 = 10
+NM = 0.5
+NF = 0.5
+
+NM1 = 0.1
+XM1 = 0.08
+YM1 = 0.01
+AM1 = NM1-XM1-YM1
+NM2 = 0.1
+XM2 = 0.08
+YM2 = 0.01
+AM2 = NM2-XM2-YM2
+NM3 = 0.1
+XM3 = 0.08
+YM3 = 0.01
+AM3 = NM3-XM3-YM3
+NM4 = NM-NM1-NM2-NM3
+XM4 = 0.18
+YM4 = 0.01
+AM4 = NM4-XM4-YM4
+NF1 = 0.1
+XF1 = 0.08
+YF1 = 0.01
+AF1 = NF1-XF1-YF1
+NF2 = 0.1
+XF2 = 0.08
+YF2 = 0.01
+AF2 = NF2-XF2-YF2
+NF3 = 0.1
+XF3 = 0.08
+YF3 = 0.01
+AF3 = NF3-XF3-YF3
+NF4 = NF-NF1-NF2-NF3
+XF4 = 0.2
+YF4 = 0.18
+AF4 = NF4-XF4-YF4
+
+NM_matrix=c(NM1,NM2,NM3,NM4)
+NF_matrix=c(NF1,NF2,NF3,NF4)
 
 
    
@@ -133,12 +138,13 @@ rhoM_matrix <- matrix(0, nrow = 4, ncol = 4)
 for (i in 1:4) {
     for (j in 1:4) {
       if (i == j) {
-        rhoM_matrix[i, j] <- epsilon + (1 - epsilon) * ((cF[i]*NF)/sum(cF*NF))
+        rhoM_matrix[i, j] <- epsilon + (1 - epsilon) * ((cF[j]*NF_matrix[j])/sum(cF*NF_matrix))
       } else {
-        rhoM_matrix[i, j] <- (1 - epsilon) * ((cF[i]*NF)/sum(cF*NF))
+        rhoM_matrix[i, j] <- (1 - epsilon) * ((cF[j]*NF_matrix[j])/sum(cF*NF_matrix))
       }
     }
 }
+
 
 # Define the function to calculate the rho matrix for female
 rhoF_matrix <- matrix(0, nrow = 4, ncol = 4)
@@ -146,33 +152,18 @@ rhoF_matrix <- matrix(0, nrow = 4, ncol = 4)
 for (i in 1:4) {
   for (j in 1:4) {
     if (i == j) {
-      rhoF_matrix[i, j] <- epsilon + (1 - epsilon) * ((cM[i]*NM)/sum(cM*NM))
+      rhoF_matrix[i, j] <- epsilon + (1 - epsilon) * ((cM[j]*NM_matrix[j])/sum(cM*NM_matrix))
     } else {
-      rhoF_matrix[i, j] <- (1 - epsilon) * ((cM[i]*NM)/sum(cM*NM))
+      rhoF_matrix[i, j] <- (1 - epsilon) * ((cM[j]*NM_matrix[j])/sum(cM*NM_matrix))
     }
   }
-}
-
-#rhoF
-calculate_rhoF_matrix <- function(epsilon, cM, NM) {
-  rhoF_matrix <- matrix(0, nrow = 4, ncol = 4)
-  for (i in 1:4) {
-    for (j in 1:4) {
-      if (i == j) {
-        rho_matrix[i, j] <- epsilon + (1 - epsilon) * ((cM*NM)/sum(cM*NM))
-      } else {
-        rho_matrix[i, j] <- (1 - epsilon) * ((cM*NM)/sum(cM*NM))
-      }
-    }
-  }
-  return(rhoF_matrix)
 }
 
 
 ################################################################################
-state=c(XM1, YM1, AM1, XM2, YM2, AM2, XM3, YM3, AM3,
-        XM4, YM4, AM4, XF1, YF1, AF1, XF2, YF2, AF2,
-        XF3, YF3, AF3, XF4, YF4, AF4);
+state=c(XM1=XM1, YM1=YM1, AM1=AM1, XM2=XM2, YM2=YM2, AM2=AM2, XM3=XM3, YM3=YM3, AM3=AM3,
+        XM4=XM4, YM4=YM4, AM4=AM4, XF1=XF1, YF1=YF1, AF1=AF1, XF2=XF2, YF2=YF2, AF2=AF2,
+        XF3=XF3, YF3=YF3, AF3=AF3, XF4=XF4, YF4=YF4, AF4=AF4);
 
 parameters=list(mu=mu, rhoM=rhoM_matrix, rhoF=rhoF_matrix, cM=cM, cF=cF, sigmaM=sigmaM, 
             sigmaF=sigmaF, gamma=gamma, betaF=betaF, betaM=betaM, thetaM=thetaM,
@@ -184,7 +175,6 @@ times=seq(1,1000*365,by=1);
 #Simulation model
 sim=ode(y=state,times=times,func=SIS2riskGrs,parms=parameters)
 sim=as.data.frame(sim)
-
 
 
 

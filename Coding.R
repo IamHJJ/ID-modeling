@@ -90,36 +90,36 @@ NM = 0.5
 NF = 0.5
 
 NM1 = 0.1
-XM1 = 0.08
-YM1 = 0.01
+XM1 = 0.0999999
+YM1 = 0.00000005
 AM1 = NM1-XM1-YM1
 NM2 = 0.1
-XM2 = 0.08
-YM2 = 0.01
+XM2 = 0.099
+YM2 = 0.00000005
 AM2 = NM2-XM2-YM2
 NM3 = 0.1
-XM3 = 0.08
-YM3 = 0.01
+XM3 = 0.0999999
+YM3 = 0.00000005
 AM3 = NM3-XM3-YM3
 NM4 = NM-NM1-NM2-NM3
-XM4 = 0.18
-YM4 = 0.01
+XM4 = 0.1999999
+YM4 = 0.00000005
 AM4 = NM4-XM4-YM4
 NF1 = 0.1
-XF1 = 0.08
-YF1 = 0.01
+XF1 = 0.0999999
+YF1 = 0.00000005
 AF1 = NF1-XF1-YF1
 NF2 = 0.1
-XF2 = 0.08
-YF2 = 0.01
+XF2 = 0.0999999
+YF2 = 0.00000005
 AF2 = NF2-XF2-YF2
 NF3 = 0.1
-XF3 = 0.08
-YF3 = 0.01
+XF3 = 0.0999999
+YF3 = 0.00000005
 AF3 = NF3-XF3-YF3
 NF4 = NF-NF1-NF2-NF3
-XF4 = 0.2
-YF4 = 0.18
+XF4 = 0.1999999
+YF4 = 0.00000005
 AF4 = NF4-XF4-YF4
 
 NM_matrix=c(NM1,NM2,NM3,NM4)
@@ -170,12 +170,17 @@ parameters=list(mu=mu, rhoM=rhoM_matrix, rhoF=rhoF_matrix, cM=cM, cF=cF, sigmaM=
             thetaF=thetaF, NF1 = NF1, NF2 = NF2, NF3 = NF3, NF4 = NF4, NM1 = NM1, 
             NM2 = NM2, NM3 = NM3, NM4 = NM4);
 
-times=seq(1,1000*365,by=1);
+times=seq(1,10*365,by=1);
 
 #Simulation model
 sim=ode(y=state,times=times,func=SIS2riskGrs,parms=parameters)
 sim=as.data.frame(sim)
 
-
+# Prevalence: Symptomatic Male
+plot(x=times[1:100], y=sim$YM1[1:100], xlab = "time", ylab = "Prevalence", type = "l", main = "Prevalence", col = "red");
+lines(sim$YM2[1:100], type = "l", col = "green");
+lines(sim$YM3[1:100], type = "l", col = "blue");
+lines(sim$YM4[1:100], type = "l", col = "orange");
+legend("topright", legend=c("Group 1", "Group 2", "Group 3", "Group 4"), col=c("red", "green","blue","orange"), lty=1)
 
 
